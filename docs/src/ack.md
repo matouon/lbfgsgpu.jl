@@ -1,0 +1,1 @@
+I would like to thank my cat Luděk for his undying support in the last few days. He did not have it easy as I often programmed instead of eating and forgor to give him food as well. He will be given a complementary snack while you are reading this documentation.
