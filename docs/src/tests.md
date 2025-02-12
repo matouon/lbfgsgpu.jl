@@ -4,7 +4,14 @@ This package is tested via direct comparison between the outputs of original `L-
 
 # Test Cases
 
-In runtests.jl 6 tests are provided. The functionality is tested by optimizing sum of squared differences between the function outputs and a given height, which is provided as user input. The minimal value obtained is filtered to remove any outliers as convergence issues can be common in both CPU and GPU implementations. The mean value of these correctly converged solutions is then compared between the original `L-BFGS` and the `L-BFGS_GPU` implementation. The tests are done firstly for 50 variables, then for 500 variables and in the end for 1000 variables. This should ensure enough diversity for general function solution testing.
+In runtests.jl 9 tests are provided. The functionality is tested by optimizing sum of squared differences between the function outputs and a given height, which is provided as user input. One part of the tests filter the obtained minimal function value to remove any outliers as convergence issues can be common in both CPU and GPU implementations. The mean value of these correctly converged solutions is then compared between the original `L-BFGS` and the `L-BFGS_GPU` implementation. The second part of the tests compares directly the minimizers between the functions to ensure that the implementations work in the exactly same manner.
+
+- **Quadratic SSD tests**
+```math
+\begin{equation}
+\text{SSD}_{\text{quad}} = \sum_{i=1}^{n} (x_i^2 - y_i)^2
+\end{equation}
+```
 
 - **Gaussian SSD tests**
 ```math

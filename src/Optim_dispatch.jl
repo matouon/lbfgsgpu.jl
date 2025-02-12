@@ -1,28 +1,5 @@
-# using CUDA
-# function gpu_finite_diff!(df::CuArray, f::Function, c3::CuArray, x::CuArray, epsilons::CuArray)
-#     @cuda threads=length(c3) kernel_finite_diff!(df, f, c3, x, epsilons)
-#     return
-# end
-
-# function kernel_finite_diff!(df, f, c3, x, epsilons)
-#     i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
-#     if i <= length(c3)
-#         x_old = c3[i]  # Save original value
-
-#         # Compute finite difference approximation
-#         c3[i] = x_old + epsilons[i]
-#         dfi1 = f(c3)  # Ensure f(c3) returns a scalar
-
-#         c3[i] = x_old - epsilons[i]
-#         dfi2 = f(c3)  # Ensure f(c3) returns a scalar
-
-#         c3[i] = x_old  # Restore original value
-
-#         df[i] = (dfi1 - dfi2) / (2 * epsilons[i])  # Compute finite difference
-#     end
-#     return
-# end
-
+using CUDA
+using LinearAlgebra
 
 function FiniteDiff.finite_difference_gradient!(
     df::StridedVector{<:Number},
@@ -34,13 +11,10 @@ function FiniteDiff.finite_difference_gradient!(
     dir=true) where {T1,T2,T3,T4,fdtype,returntype,inplace}
 
     fx, c1, c2, c3 = cache.fx, cache.c1, cache.c2, cache.c3
-    # [-5.143633339334399, -3.719855687175146, 1.7641842547134914]nothingnothingnothing[0.0, 0.0, 0.0]
-    # print(x, fx, c1, c2, c3)
-    # error()
+    # df = CUDA.zeros(length(c3))  # Preallocate output array
 
     if fdtype != Val(:complex)
         if eltype(df) <: Complex && !(eltype(x) <: Complex)
-
             copyto!(c1, x)
         end
     end
@@ -84,45 +58,42 @@ function FiniteDiff.finite_difference_gradient!(
         end
         
     elseif fdtype == Val(:central)
-        #inbounds???
-        # print("INBB")
-        # print(x, relstep, absstep)
-        #[-5.143633339334399, -3.719855687175146, 1.7641842547134914]
-        #6.0554544523933395e-66.0554544523933395e-6
-        # err()
-        epsilons = FiniteDiff.compute_epsilon.(fdtype, x, relstep, absstep, dir)
-        # print(epsilons)
-        # error()
-        #epsilons are the same
-
-        #x, relstep, absstep, epsilons
-        #[-5.143633339334399, -3.719855687175146, 1.7641842547134914] ok
-        # 6.0554544523933395e-6 6.0554544523933395e-6 ok
-        # [3.114703740615131e-5, 2.2525416683165425e-5, 1.0682937400047037e-5]
-        # print(x, relstep, absstep, epsilons)
-        # err()
-        df = CUDA.zeros(length(c3))  # Preallocate output array
-        # gpu_finite_diff!(df, f, c3, x, epsilons)  # Run GPU kernel
+        epsilons = similar(x)
+        epsilons .= FiniteDiff.compute_epsilon.(fdtype, x, relstep, absstep, dir)
+    
         x_old = x
-        c3 .+= epsilons
-        # # print("C3",c3)
-        # # err()
-        # #-5.143602192296993, -3.719833161758463, 1.7641949376508914 ok
-        dfi = f(c3)
-        c3 .= x_old .- epsilons
-        # print(c3, "  dfi  ", dfi)
-        # # [-5.143664486371805, -3.719878212591829, 1.7641735717760914]
-        # #   dfi  858.4516950019134 NOT OK
-        dfi -= sum(f(c3))
-        c3 .= x_old
-        # df .= real.(dfi ./ (2 .* epsilons))
-        # [-671.2491449325007, -928.1702762766218, -1957.0855321091392]
-        # [-5.143633339334399, -3.719855687175146, 1.7641842547134914]
-        # [-0.04181484445211936, -0.04181484445211936, -0.04181484445211936]
-        # print("TADY") 
-        #FIRST ENTRY TO FUNCTION
-        # print(df, c3, dfi)
-        # err()
+        c3i = similar(epsilons)
+        c3i .= x_old .- epsilons
+
+        c_st = repeat(c3', size(c3i, 1), 1)
+
+        # Matrix of of ones
+        B = CuArray(ones(Float64, size(c_st)))
+
+        # Set diagonal to zero
+        B[diagind(B)] .= 0
+
+        dd = CuArray(zeros(Float64, size(c_st)))
+        dd[diagind(dd)] .= c3 .+ epsilons
+        c_st_i = similar(c_st)
+        c_st_i .= c_st.*B .+ dd
+
+        dfi = similar(c_st_i, size(c_st_i, 1), 1)
+
+        dfi .= CuArray(map(f, eachrow(c_st_i))) # Result is a column vector
+      
+        # Matrix of of ones
+        B = CuArray(ones(Float64, size(c_st)))
+
+        # Set diagonal to zero
+        B[diagind(B)] .= 0
+
+        dd = CuArray(zeros(Float64, size(c_st)))
+        dd[diagind(dd)] .= c3 .- epsilons
+        c_st .= c_st.*B .+ dd
+        dfi .= dfi .- CuArray(map(f, eachrow(c_st))) #vec
+        df .= real.(dfi ./ ( 2 .*epsilons))#vec
+
         if eltype(df) <: Complex
             if eltype(x) <: Complex
                 c3 .+= im .* epsilons
@@ -141,8 +112,6 @@ function FiniteDiff.finite_difference_gradient!(
         end
     
     elseif fdtype == Val(:complex) && returntype <: Real && eltype(df) <: Real && eltype(x) <: Real
-        # print("AAAAAAAAAA")
-        # err()
         copyto!(c1, x)
         epsilon_complex = eps(real(eltype(x)))
         c1_old = c1
@@ -152,9 +121,7 @@ function FiniteDiff.finite_difference_gradient!(
     else
         fdtype_error(returntype)
     end
-    #[-671.2491449325007, -928.1702762766218, -1957.0855321091392]
-    # print(df, "HERE")
-    # error()
+
     df
 end
 

@@ -1,7 +1,7 @@
 using Random
-using Optim
 using CUDA
 using lbfgsgpu
+using lbfgsgpu.Optim
 
 #Randomly initializes a init solution, where M is solution size, min_r, max_r are minimal and maximal range of random numbers
 function random_init(M::Int, min_r::T, max_r::F) where {T<:Number,F<:Number}
@@ -114,24 +114,13 @@ end
 
 ########################################################################################################
 #Run the base bfgs on this function
-f_str = "q" #either g, gs, q -> gaussian, gaussian with sq. input, quadratic
+f_str = "gs" #either g, gs, q -> gaussian, gaussian with sq. input, quadratic
 
-M = 3 #solution size 
+M = 302 #solution size 
 min_r, max_r = -10, 10 # min_range, max_range for the random initialization
 given_height = 1/2 #The height at which we want the value of selected function to be
 gaus_mu = 2
 gaus_std = 1
-
-################## TESTS TODO REMOVE
-
-# x_cpu = rand(10)
-# x_gpu = CuArray(x_cpu)
-
-# println("CPU Result: ", f_q(x_cpu, 1/4))
-# println("GPU Result: ", f_q(x_gpu, 1/4))  # If this fails, f_q isn't GPU-safe
-
-
-###################
 
 g, gs, q = define_functions(given_height, gaus_mu, gaus_std)
 

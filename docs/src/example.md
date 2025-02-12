@@ -46,7 +46,7 @@ function f_gaus_sq(x::AbstractVector{T}, given_height::F, gaus_mu::G, gaus_std::
 end
 
 # Initialize parameters
-M, min_r, max_r = 300, -10, 10
+M, min_r, max_r = 50, -10, 10
 gaus_mu = 1
 gaus_std = 1
 

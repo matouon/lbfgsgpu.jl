@@ -1,11 +1,11 @@
 using Random
-using Optim
+using lbfgsgpu.Optim
 using BenchmarkTools
 using CUDA
 using DataFrames
 using CSV
 using lbfgsgpu
-
+using ProfileView
 #Randomly initializes a init solution, where M is solution size, min_r, max_r are minimal and maximal range of random numbers
 function random_init(M::Int, min_r::T, max_r::F) where {T<:Number,F<:Number}
     return rand(M).*(max_r.-min_r) .+ min_r
@@ -116,7 +116,7 @@ end
 
 
 ########################################################################################################
-f_str = "g" #either g, gs, q -> gaussian, gaussian with sq. input, quadratic
+f_str = "q" #e|ither g, gs, q -> gaussian, gaussian with sq. input, quadratic
 
 min_r, max_r = -10, 10 # min_range, max_range for the random initialization
 given_height = 1/2
@@ -139,7 +139,7 @@ results = DataFrame(
 
 
 ns_to_s = 1e-9 #Conversio nmade because benchmark returns time in ns
-num_of_points = Int64[1e2, 2e2, 2e3, 3e3, 5e3, 7e3, 1e4]
+num_of_points = Int64[1e2, 2e2, 3e2, 4e2]# 3e3, 5e3, 7e3, 1e4]
 
 for m in num_of_points
     print("Testing for: ", m, " variables --------> ")

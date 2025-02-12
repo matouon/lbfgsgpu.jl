@@ -2,7 +2,7 @@
 
 julia_version = "1.11.3"
 manifest_format = "2.0"
-project_hash = "c181661afb501fc177aaa71719e535c3d999e181"
+project_hash = "eb192d668b021bdcc1363e46a427919be628a4ab"
 
 [[deps.ANSIColoredPrinters]]
 git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
@@ -423,7 +423,7 @@ version = "1.13.0"
 
 [[deps.FiniteDiff]]
 deps = ["ArrayInterface", "LinearAlgebra", "Setfield"]
-path = "C:\\Users\\Ondra\\.julia\\dev\\FiniteDiff"
+git-tree-sha1 = "f089ab1f834470c525562030c8cfde4025d5e915"
 uuid = "6a86dc24-6348-571c-b903-95158fe2bd41"
 version = "2.27.0"
 
@@ -1049,7 +1049,7 @@ version = "0.5.6+0"
 
 [[deps.Optim]]
 deps = ["Compat", "FillArrays", "ForwardDiff", "LineSearches", "LinearAlgebra", "NLSolversBase", "NaNMath", "Parameters", "PositiveFactorizations", "Printf", "SparseArrays", "StatsBase"]
-path = "C:\\Users\\Ondra\\.julia\\dev\\Optim"
+git-tree-sha1 = "c1f51f704f689f87f28b33836fd460ecf9b34583"
 uuid = "429524aa-4258-5aef-a3af-852621145aeb"
 version = "1.11.0"
 
@@ -1789,7 +1789,7 @@ uuid = "bf975903-5238-5d20-8243-bc370bc1e7e5"
 version = "4.15.1+0"
 
 [[deps.lbfgsgpu]]
-deps = ["CUDA", "Documenter", "FiniteDiff", "ForwardDiff", "Optim", "Revise"]
+deps = ["CUDA", "Documenter", "FiniteDiff", "ForwardDiff", "LinearAlgebra", "Optim", "Revise"]
 path = ".."
 uuid = "d8f8f5c8-1383-4b64-8b4f-3614459ac99d"
 version = "0.1.0"

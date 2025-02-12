@@ -1,6 +1,6 @@
 using Random
 using CUDA
-using Optim
+using lbfgsgpu.Optim
 using lbfgsgpu
 using Plots
 
@@ -164,11 +164,11 @@ function filtering(sol_vals::AbstractArray, tolerance::Number)
     filtered_sols, filtered_vals
 end
 ########################################################################################################
-f_str = "g" #either g, gs, q -> gaussian, gaussian with sq. input, quadratic
+f_str = "q" #either g, gs, q -> gaussian, gaussian with sq. input, quadratic
 
-M = 500 #solution size 
+M = 50 #solution size 
 min_r, max_r = -10, 10 # min_range, max_range for the random initialization
-given_height = 1/4 #The height at which we want the value of selected function to be
+given_height = 25 #The height at which we want the value of selected function to be
 gaus_mu = 1
 gaus_std = 1
 
@@ -179,8 +179,8 @@ obj_fun, orig_fun = sel_opt_fun(f_str, g, gs, q)
 Random.seed!(69420)
 
 #CPU
-# x0 = random_init(M, min_r, max_r) # Initial guess
-# sols, min = compute_and_print(obj_fun, x0, verbose=true)
+x0 = random_init(M, min_r, max_r) # Initial guess
+sols, min = compute_and_print(obj_fun, x0, verbose=true)
 
 #GPU
 #Here min is not the actual function value, but the value of the OBJECTIVE function

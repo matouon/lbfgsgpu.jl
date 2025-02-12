@@ -30,3 +30,5 @@ As the underlying problem does not require precise solution, but rather an inter
 # Gaussian with squared input for height = 0.25
 ![My Image](assets/gs.png)
 
+# Quadratic function for height = 40
+![My Image](assets/q.png)

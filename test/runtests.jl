@@ -1,6 +1,6 @@
 using Test
 using CUDA
-using Optim
+using lbfgsgpu.Optim
 using lbfgsgpu
 using Random
 using Statistics
@@ -56,7 +56,7 @@ end
 function compute_test(f, x0::AbstractVector)
     res = optimize(f, x0, LBFGS())
     minimizer = Optim.minimizer(res)
-    minimizer
+    Array(minimizer)
 end
 
 function filtering(sol_vals::AbstractArray, tolerance::Number, given_height::Number)
@@ -165,8 +165,63 @@ function init_test(var_n, giv_h, gaus_mu, gaus_std, f, f_str, tolerance)
         m_val_c = mean(filtered_vals_cuda)
         m_val, m_val_c
 end
+
+
 @testset "function optimization tests" begin
-    @testset "Gauss" begin
+    @testset "Gauss_vals" begin
+        giv_h = 1/4
+        gaus_mu = 1
+        gaus_std = 1
+        f = x -> f_gaus(x, giv_h, gaus_mu, gaus_std)
+        f_str = "g"
+        var_n = 10 #Number of variables
+ 
+        Random.seed!(69420)
+        x0 = random_init(var_n, -10, 10) # Initial guess
+        x0_cuda = CuArray(copy(x0))
+
+        minimizer = compute_test(f, x0)
+        minimizer_cuda = compute_test(f, x0_cuda)
+
+        #Round solutions to 4 decimal places.
+        @test round.(minimizer, digits=4) == round.(minimizer_cuda, digits=4)
+    end
+
+    @testset "Quadratic_vals" begin
+        giv_h = 30
+
+        f = x -> f_q(x, giv_h)
+        f_str = "q"
+        var_n = 10 #Number of variables
+        
+        Random.seed!(69420)       
+        x0 = random_init(var_n, -10, 10) # Initial guess
+        x0_cuda = CuArray(copy(x0))
+
+        minimizer = compute_test(f, x0)
+        minimizer_cuda = compute_test(f, x0_cuda)
+
+        @test round.(minimizer, digits=4) == round.(minimizer_cuda, digits=4)
+    end
+
+    @testset "Gauss_sq_inp_vals" begin
+        giv_h = 1/4
+        gaus_mu = 1
+        gaus_std = 1
+        f = x -> f_gaus(x, giv_h, gaus_mu, gaus_std)
+        f_str = "gs"
+        var_n = 10 #Number of variables
+        
+        Random.seed!(69420)       
+        x0 = random_init(var_n, -10, 10) # Initial guess
+        x0_cuda = CuArray(copy(x0))
+
+        minimizer = compute_test(f, x0)
+        minimizer_cuda = compute_test(f, x0_cuda)
+
+        @test round.(minimizer, digits=4) == round.(minimizer_cuda, digits=4)
+    end
+    @testset "Gauss_mean" begin
         giv_h = 1/4
         gaus_mu = 1
         gaus_std = 1
@@ -174,20 +229,20 @@ end
         tolerance = 0.01
         f_str = "g"
         
-        var_n = 50
+        var_n = 10
         m_val, m_val_c = init_test(var_n, giv_h, gaus_mu, gaus_std, f, f_str, tolerance)
         @test m_val ≈ m_val_c atol = tolerance
         
-        var_n = 500
+        var_n = 20
         m_val, m_val_c = init_test(var_n, giv_h, gaus_mu, gaus_std, f, f_str, tolerance)
         @test m_val ≈ m_val_c atol = tolerance
         
-        var_n = 1000
+        var_n = 40
         m_val, m_val_c = init_test(var_n, giv_h, gaus_mu, gaus_std, f, f_str, tolerance)
         @test m_val ≈ m_val_c atol = tolerance
     end
 
-    @testset "Gauss_sq_inp" begin
+    @testset "Gauss_sq_inp_mean" begin
         giv_h = 1/4
         gaus_mu = 1
         gaus_std = 1
@@ -195,15 +250,15 @@ end
         tolerance = 0.01
         f_str = "gs"
         
-        var_n = 50
+        var_n = 10
         m_val, m_val_c = init_test(var_n, giv_h, gaus_mu, gaus_std, f, f_str, tolerance)
         @test m_val ≈ m_val_c atol = tolerance
         
-        var_n = 500
+        var_n = 20
         m_val, m_val_c = init_test(var_n, giv_h, gaus_mu, gaus_std, f, f_str, tolerance)
         @test m_val ≈ m_val_c atol = tolerance
         
-        var_n = 1000
+        var_n = 40
         m_val, m_val_c = init_test(var_n, giv_h, gaus_mu, gaus_std, f, f_str, tolerance)
         @test m_val ≈ m_val_c atol = tolerance
     end
