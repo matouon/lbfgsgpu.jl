@@ -24,7 +24,19 @@ To obtain some basic benchmarking, run /scripts/gpu_bench.jl. After running the 
 
 You can test this package with provided testsets.
 
-
+# Implementation of the solver with CUDA
+The functiom implementing the CPU -> GPU transition is
+```
+function FiniteDiff.finite_difference_gradient!(
+    df::StridedVector{<:Number},
+    f,
+    x::CuArray,
+    cache::FiniteDiff.GradientCache{T1,T2,T3,T4,fdtype,returntype,inplace};
+    relstep=FiniteDiff.default_relstep(fdtype, eltype(x)),
+    absstep=relstep,
+    dir=true) where {T1,T2,T3,T4,fdtype,returntype,inplace}
+``` 
+from the pkg FiniteDiff. It is used in multiple dispatch as we dispatch through the vector of initial solutions x. In the original script there is x::Array, but to enable GPU use we use x::CuArray
 
 # Brief description of /scripts
 
