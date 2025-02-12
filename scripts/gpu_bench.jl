@@ -152,7 +152,7 @@ for m in num_of_points
     min_time = minimum(stats.times)  # Minimum cycle time
     mean_time = mean(stats.times) # Mean cycle time
     min_sol, min_value = compute_and_print(fun, x0)  # Compute min value (assuming it returns one)
-    push!(results, (m, false, mean_time*ns_to_s, min_time*ns_to_s, min_value*ns_to_s))
+    push!(results, (m, false, mean_time*ns_to_s, min_time*ns_to_s, min_value))
 
     print(" With CUDA\n")
     Random.seed!(69420)
@@ -161,7 +161,7 @@ for m in num_of_points
     min_time_cuda = minimum(stats_cuda.times) # Minimum cycle time
     mean_time_cuda = mean(stats_cuda.times) # Mean cycle time
     min_sol_cuda, min_value_cuda = compute_and_print(fun, x0_cuda)
-    push!(results, (m, true, mean_time_cuda*ns_to_s, min_time_cuda*ns_to_s, min_value_cuda*ns_to_s))
+    push!(results, (m, true, mean_time_cuda*ns_to_s, min_time_cuda*ns_to_s, min_value_cuda))
 end
 # Display results
 println(results)
