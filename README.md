@@ -17,9 +17,18 @@ Apart from the obvious change of type Array - > CuArray,
 the only issue was scalar indexing, which is not very good for GPU as it basically cancels the parallelism. The fix was correct and logical use of broadcasting. 
 
 # Benchmarking
-To obtain some basic benchmarking, run /scripts/gpu_bench.jl
+To obtain some basic benchmarking, run /scripts/gpu_bench.jl. After running the benchmarking there should be a file called benchmark_results.csv with computed benchmark data. 
 
 
 # Tests
 
 You can test this package with provided testsets.
+
+
+
+# Brief description of /scripts
+
+lbfgs_test.jl -> Main example, which can be used to test the individual functions
+draw_sols.jl -> A function, which can be used to draw the solution plots 
+gpu_bench.jl -> Benchmarking script
+plot_bench.jl -> Helper script to plot the benchmarking results into a line plot

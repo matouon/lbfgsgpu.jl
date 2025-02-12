@@ -1,10 +1,10 @@
 using Random
+using Optim
 using BenchmarkTools
 using CUDA
-using ProfileView
 using DataFrames
 using CSV
-using Plots
+using lbfgsgpu
 
 #Randomly initializes a init solution, where M is solution size, min_r, max_r are minimal and maximal range of random numbers
 function random_init(M::Int, min_r::T, max_r::F) where {T<:Number,F<:Number}
@@ -54,10 +54,6 @@ function f_q(x::AbstractVector{T}, given_height::F) where {T<:Number,F<:Number}
     return sum((x .^ 2 .- given_height).^2)
 end
 
-
-#Setting default function to identity, in case user specifies incorrect function name 
-def_fun = x -> x
-
 #A helper structure for function selection
 struct fun_sel
     gauss::Bool
@@ -81,7 +77,7 @@ function set_selection_struct(f_str::String)
 end
 
 #Helper function to select a function using string input from user
-function sel_opt_fun(f_str::String)
+function sel_opt_fun(f_str::String, g, gs, q)
     f_sel = set_selection_struct(f_str)
     if f_sel.gauss
         f = g
@@ -122,17 +118,15 @@ end
 ########################################################################################################
 f_str = "g" #either g, gs, q -> gaussian, gaussian with sq. input, quadratic
 
-f = sel_opt_fun(f_str)
-
-M = 2000 #solution size TODO FUNGUJE JEN PRO M=1 WTF
-min_r, max_r = -10, 10 # min_range, max_range for the random initialization : TODO maybe better to change range on diff axis, now same for all
+min_r, max_r = -10, 10 # min_range, max_range for the random initialization
 given_height = 1/2
 gaus_mu = 2
 gaus_std = 1
 
-f = sel_opt_fun(f_str)
 
 g, gs, q = define_functions(given_height, gaus_mu, gaus_std)
+
+fun = sel_opt_fun(f_str, g, gs, q)
 
 # Initialize DataFrame to store results
 results = DataFrame(
@@ -143,35 +137,31 @@ results = DataFrame(
     Min_Value = Float64[]
 )
 
-#Choose benchmarking function
-if f_sel.gauss
-    f_b = g
-    num_of_points = Int64[1e2, 5e2, 1e3, 1500, 2000]# 1e4]#, 1e5, 1e6]
-else
-    f_b = q
-    num_of_points = Int64[1e2, 1e3, 4e3, 7e3, 1e4]
-end
 
+ns_to_s = 1e-9 #Conversio nmade because benchmark returns time in ns
+num_of_points = Int64[1e2, 2e2, 2e3, 3e3, 5e3, 7e3, 1e4]
 
 for m in num_of_points
-    print("Testing ",f_sel," loss for: ", m, " variables --------> ")
+    print("Testing for: ", m, " variables --------> ")
     print(" Without CUDA -------> ")
     Random.seed!(69420)
-    x0 = random_init( m, min_r, max_r) # Initial guess
-    elapsed_time = @elapsed compute_and_print(f_b, x0) 
-    min_time = elapsed_time  # Minimum cycle time
-    mean_time = elapsed_time # Mean cycle time
-    min_sol, min_value = compute_and_print(f_b, x0)  # Compute min value (assuming it returns one)
-    push!(results, (m, false, mean_time, min_time, min_value))
+    x0 = random_init(m, min_r, max_r) # Initial guess
+    #TODO replace with benchmarking to get min and mean time and not only one time!!!
+    stats = @benchmark compute_and_print(fun, $x0) 
 
-    print(" Without CUDA -------> ")
+    min_time = minimum(stats.times)  # Minimum cycle time
+    mean_time = mean(stats.times) # Mean cycle time
+    min_sol, min_value = compute_and_print(fun, x0)  # Compute min value (assuming it returns one)
+    push!(results, (m, false, mean_time*ns_to_s, min_time*ns_to_s, min_value*ns_to_s))
+
+    print(" With CUDA\n")
     Random.seed!(69420)
-    x0_cuda = random_init( m, min_r, max_r) # Initial guess
-    stats_cuda = @elapsed compute_and_print(f_b, x0_cuda)
-    min_time_cuda = stats_cuda # Minimum cycle time
-    mean_time_cuda = stats_cuda # Mean cycle time
-    min_sol_cuda, min_value_cuda = compute_and_print(f_b, x0_cuda)
-    push!(results, (m, true, mean_time_cuda, min_time_cuda, min_value_cuda))
+    x0_cuda = CuArray(random_init(m, min_r, max_r)) # Initial guess
+    stats_cuda = @benchmark compute_and_print(fun, $x0_cuda)
+    min_time_cuda = minimum(stats_cuda.times) # Minimum cycle time
+    mean_time_cuda = mean(stats_cuda.times) # Mean cycle time
+    min_sol_cuda, min_value_cuda = compute_and_print(fun, x0_cuda)
+    push!(results, (m, true, mean_time_cuda*ns_to_s, min_time_cuda*ns_to_s, min_value_cuda*ns_to_s))
 end
 # Display results
 println(results)

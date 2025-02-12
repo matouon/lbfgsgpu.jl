@@ -8,6 +8,10 @@ function random_init(M::Int, min_r::T, max_r::F) where {T<:Number,F<:Number}
     return rand(M).*(max_r.-min_r) .+ min_r
 end
 
+function gaussian(x::AbstractVector, mu::Number, std::Number)
+    (1/(std*sqrt(2*pi))).*exp.(-((x.-mu).^2)./(2*std^2))
+end
+
 #Computes the solution to a given function f with initial solution x0
 function compute_and_print(f::Function, x0::AbstractVector, verbose::Bool)
     res_gpu = optimize(f, x0, LBFGS())
@@ -51,10 +55,6 @@ function f_q(x::AbstractVector{T}, given_height::F) where {T<:Number,F<:Number}
     return sum((x .^ 2 .- given_height).^2)
 end
 
-
-#Setting default function to identity, in case user specifies incorrect function name 
-def_fun = x -> x
-
 #A helper structure for function selection
 struct fun_sel
     gauss::Bool
@@ -78,7 +78,7 @@ function set_selection_struct(f_str::String)
 end
 
 #Helper function to select a function using string input from user
-function sel_opt_fun(f_str::String)
+function sel_opt_fun(f_str::String, g, gs, q)
     f_sel = set_selection_struct(f_str)
     if f_sel.gauss
         f = g
@@ -93,6 +93,7 @@ function sel_opt_fun(f_str::String)
     f
 end
 
+
 #Usable functions definition
 function define_functions(given_height, gaus_mu, gaus_std)
     #Sum of Gaussians
@@ -104,24 +105,24 @@ function define_functions(given_height, gaus_mu, gaus_std)
     g, gs, q
 end
 
-
 ########################################################################################################
 #Run the base bfgs on this function
+f_str = "q" #either g, gs, q -> gaussian, gaussian with sq. input, quadratic
+
 M = 3 #solution size 
 min_r, max_r = -10, 10 # min_range, max_range for the random initialization
 given_height = 1/2 #The height at which we want the value of selected function to be
 gaus_mu = 2
 gaus_std = 1
-f_str = "q" #either g, gs, q -> gaussian, gaussian with sq. input, quadratic
-
-f = sel_opt_fun(f_str)
 
 g, gs, q = define_functions(given_height, gaus_mu, gaus_std)
 
-Random.seed!(69420)
-x0 = random_init(M, min_r, max_r) # Initial guess
-compute_and_print(f, x0, verbose=true) 
+fun = sel_opt_fun(f_str, g, gs, q)
 
 Random.seed!(69420)
 x0 = random_init(M, min_r, max_r) # Initial guess
-compute_and_print(f, CuArray(x0), verbose=true)
+compute_and_print(fun, x0, verbose=true) 
+
+Random.seed!(69420)
+x0 = random_init(M, min_r, max_r) # Initial guess
+compute_and_print(fun, CuArray(x0), verbose=true)
