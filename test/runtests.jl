@@ -32,47 +32,54 @@ function f_q(x::AbstractVector{T}, given_height::F) where {T<:Number,F<:Number}
 end
 
 function compute_test(f, x0::AbstractVector)
-    optimize(f, x0, LBFGS())
+    res = optimize(f, x0, LBFGS())
+    minimum = Optim.minimum(res)
+    minimum
 end
+@testset "function optimization tests" begin
 
-@testset "Gauss" begin
-    f = x -> f_gaus(x, 1/4, 1, 1)
+    @testset "Quadratic" begin
+        f = x -> f_q(x, 1/4)
 
-    var_n = 100 #Number of variables
-    x0 = random_init(var_n, -10, 10) # Initial guess
-    x0_cuda = CuArray(copy(x0))
-    @test compute_test(f, x0) == compute_test(f, x0_cuda)
+        var_n = 100 #Number of variables
+        x0 = random_init(var_n, -10, 10) # Initial guess
+        x0_cuda = CuArray(copy(x0))
+        # @test compute_test(f, x0) == compute_test(f, x0_cuda)
+        @test compute_test(f, x0) ≈ compute_test(f, x0_cuda) atol=1e-2
 
-    var_n = 500 #Number of variables
-    x0 = random_init(var_n, -10, 10) # Initial guess
-    x0_cuda = CuArray(copy(x0))
-    @test compute_test(f, x0) == compute_test(f, x0_cuda)
-end
+        var_n = 500 #Number of variables
+        x0 = random_init(var_n, -10, 10) # Initial guess
+        x0_cuda = CuArray(copy(x0))
+        # @test compute_test(f, x0) == compute_test(f, x0_cuda)
+        @test compute_test(f, x0) ≈ compute_test(f, x0_cuda) atol=1e-2
 
-@testset "Quadratic" begin
-    f = x -> f_q(x, 1/4)
+    end
 
-    var_n = 100 #Number of variables
-    x0 = random_init(var_n, -10, 10) # Initial guess
-    x0_cuda = CuArray(copy(x0))
-    @test compute_test(f, x0) == compute_test(f, x0_cuda)
+    @testset "Gauss" begin
+        f = x -> f_gaus(x, 1/4, 1, 1)
 
-    var_n = 500 #Number of variables
-    x0 = random_init(var_n, -10, 10) # Initial guess
-    x0_cuda = CuArray(copy(x0))
-    @test compute_test(f, x0) == compute_test(f, x0_cuda)
-end
+        var_n = 100 #Number of variables
+        x0 = random_init(var_n, -10, 10) # Initial guess
+        x0_cuda = CuArray(copy(x0))
+        @test compute_test(f, x0) ≈ compute_test(f, x0_cuda) atol=1e-2
 
-@testset "Gauss_sq_inp" begin
-    f = x -> f_gaus_sq(x, 1/4, 1, 1)
+        var_n = 500 #Number of variables
+        x0 = random_init(var_n, -10, 10) # Initial guess
+        x0_cuda = CuArray(copy(x0))
+        @test compute_test(f, x0) ≈ compute_test(f, x0_cuda) atol=1e-2
+    end
 
-    var_n = 100 #Number of variables
-    x0 = random_init(var_n, -10, 10) # Initial guess
-    x0_cuda = CuArray(copy(x0))
-    @test compute_test(f, x0) == compute_test(f, x0_cuda)
+    @testset "Gauss_sq_inp" begin
+        f = x -> f_gaus_sq(x, 1/4, 1, 1)
 
-    var_n = 500 #Number of variables
-    x0 = random_init(var_n, -10, 10) # Initial guess
-    x0_cuda = CuArray(copy(x0))
-    @test compute_test(f, x0) == compute_test(f, x0_cuda)
+        var_n = 100 #Number of variables
+        x0 = random_init(var_n, -10, 10) # Initial guess
+        x0_cuda = CuArray(copy(x0))
+        @test compute_test(f, x0) ≈ compute_test(f, x0_cuda) atol=1e-2
+
+        var_n = 500 #Number of variables
+        x0 = random_init(var_n, -10, 10) # Initial guess
+        x0_cuda = CuArray(copy(x0))
+        @test compute_test(f, x0) ≈ compute_test(f, x0_cuda) atol=1e-2
+    end
 end

@@ -4,7 +4,7 @@ This package is tested via direct comparison between the outputs of original `L-
 
 # Test Cases
 
-In runtests.jl three test cases are provided. The functionality is tested by optimizing sum of squared differences between the function outputs and a given height, which is provided as user input. Each of the tests is done twice. Firstly for 100 variables and then for 500 variables. This should ensure enough diversity for general function testing.
+In runtests.jl three test cases are provided. The functionality is tested by optimizing sum of squared differences between the function outputs and a given height, which is provided as user input. The minimal value obtained is compared between the original `L-BFGS` and the `L-BFGS_GPU` implementation/.Each of the tests is done twice. Firstly for 100 variables and then for 500 variables. This should ensure enough diversity for general function testing.
 
 - **Quadratic SSD tests**
 ```math
