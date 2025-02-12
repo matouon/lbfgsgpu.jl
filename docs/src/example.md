@@ -8,7 +8,9 @@ To run this example, ensure you have the required packages installed:
 
 ```r
 using Pkg
-Pkg.add(["Optim", "CUDA", "lbfgsgpu", "Random"])
+Pkg.add(["Optim", "CUDA", "Random"])
+Pkg.add(url="https://github.com/matouon/lbfgsgpu.jl")
+
 ```
 
 Example code below on minimizing a SSD of 3 quadratic functions (M=3).

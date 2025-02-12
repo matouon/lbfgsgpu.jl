@@ -27,7 +27,7 @@ Pkg.add(url="https://github.com/matouon/lbfgsgpu.jl")
 To use `L-BFGS GPU`, first load the package:
 
 ```julia
-using LBFGSGPU
+using lbfgsgpu
 ```
 
 Then, you can call the solver in the same manner as `L-BFGS`, but with CuArray instead of Array type of the initial solution.
