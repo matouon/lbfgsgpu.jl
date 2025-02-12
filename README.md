@@ -28,7 +28,7 @@ You can test this package with provided testsets.
 
 # Brief description of /scripts
 
-## lbfgs_test.jl -> Main example, which can be used to test the individual functions
-## draw_sols.jl -> A function, which can be used to draw the solution plots 
-## gpu_bench.jl -> Benchmarking script
-## plot_bench.jl -> Helper script to plot the benchmarking results into a line plot
+### lbfgs_test.jl -> Main example, which can be used to test the individual functions
+### draw_sols.jl -> A function, which can be used to draw the solution plots 
+### gpu_bench.jl -> Benchmarking script
+### plot_bench.jl -> Helper script to plot the benchmarking results into a line plot
