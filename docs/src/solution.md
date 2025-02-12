@@ -16,7 +16,6 @@ As the solutions to higher dimensional problem tend to be hard to vizualize, I h
 
 - **Gaussian function**
 - **Gaussian function with squared input**
-- **Quadratic function**
 500 solutions were computed using L-BFGS with CUDA and filtered so that only converged solutions were visible. The convergence issue has nothing to do with GPU as this happens also with the base L-BFGS. This is the reason why we need very fast L-BFGS, as we need more solutions than required to filter out outliers.
 
 This can be seen in \scripts\draw_sols.jl, where user can interactively choose drawn function and parameters of the functions.
@@ -31,5 +30,3 @@ As the underlying problem does not require precise solution, but rather an inter
 # Gaussian with squared input for height = 0.25
 ![My Image](assets/gs.png)
 
-# Quadratic function for height = 40
-![My Image](assets/q.png)

@@ -20,6 +20,13 @@ using CUDA
 using lbfgsgpu
 using Random
 
+function gaussian(x::AbstractVector, mu::Number, std::Number)
+    (1 / (std * sqrt(2 * pi))) * exp.(-((x .- mu) .^ 2) / (2 * std^2))
+end
+
+function gaussian(x::Number, mu::Number, std::Number)
+    (1 / (std * sqrt(2 * pi))) * exp.(-((x - mu) ^ 2) / (2 * std^2))
+end
 # Randomly initialize solution
 function random_init(M::Int, min_r::T, max_r::T) where {T<:Number}
     return rand(M) .* (max_r - min_r) .+ min_r
@@ -32,18 +39,21 @@ function compute_and_print(f::Function, x0::AbstractVector)
     return Optim.minimizer(res)
 end
 
-# Example function: Quadratic
-function f_q(x::AbstractVector, given_height::Number)
-    return sum((x .^ 2 .- given_height) .^ 2)
+#Gaussian gaussian with squared input
+function f_gaus_sq(x::AbstractVector{T}, given_height::F, gaus_mu::G, gaus_std::H) where {T<:Number,F<:Number,G<:Number,H<:Number}
+    # Compute the sum of the squared differences for all elements
+    return sum((gaussian(x .^ 2, gaus_mu, gaus_std) .- given_height).^2)
 end
 
 # Initialize parameters
-M, min_r, max_r = 3, -10, 10
-Random.seed!(69420)
+M, min_r, max_r = 300, -10, 10
+gaus_mu = 1
+gaus_std = 1
+
 x0 = random_init(M, min_r, max_r)
 
-given_height = 0.5  # given_height value for function
-f = x -> f_q(x, given_height)
+given_height = 0.25  # given_height value for function
+f = x -> f_gaus_sq(x, given_height, gaus_mu, gaus_std)
 
 # Run optimization
 compute_and_print(f, x0)

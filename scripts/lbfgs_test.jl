@@ -50,10 +50,17 @@ function f_gaus_sq(x::AbstractVector{T}, given_height::F, gaus_mu::G, gaus_std::
 end
 
 #Quadratic function
-function f_q(x::AbstractVector{T}, given_height::F) where {T<:Number,F<:Number}
+function f_q(x::AbstractArray{T}, given_height::F) where {T<:Number,F<:AbstractFloat}
     # Compute the sum of the squared differences for all elements
     return sum((x .^ 2 .- given_height).^2)
 end
+
+# #Quadratic function
+# function f_q(x::CuArray{T}, given_height::F) where {T<:Number,F<:AbstractFloat}
+#     # Compute the sum of the squared differences for all elements
+#     y .= (x .^ 2 .- given_height).^2
+#     return CUDA.sum(y)
+# end
 
 #A helper structure for function selection
 struct fun_sel
@@ -115,14 +122,30 @@ given_height = 1/2 #The height at which we want the value of selected function t
 gaus_mu = 2
 gaus_std = 1
 
+################## TESTS TODO REMOVE
+
+# x_cpu = rand(10)
+# x_gpu = CuArray(x_cpu)
+
+# println("CPU Result: ", f_q(x_cpu, 1/4))
+# println("GPU Result: ", f_q(x_gpu, 1/4))  # If this fails, f_q isn't GPU-safe
+
+
+###################
+
 g, gs, q = define_functions(given_height, gaus_mu, gaus_std)
 
 fun = sel_opt_fun(f_str, g, gs, q)
 
-Random.seed!(69420)
-x0 = random_init(M, min_r, max_r) # Initial guess
-compute_and_print(fun, x0, verbose=true) 
 
 Random.seed!(69420)
 x0 = random_init(M, min_r, max_r) # Initial guess
-compute_and_print(fun, CuArray(x0), verbose=true)
+# compute_and_print(fun, x0, verbose=true) 
+res_cpu = optimize(fun, x0, LBFGS())
+
+Random.seed!(69420)
+x0 = random_init(M, min_r, max_r) # Initial guess
+# compute_and_print(fun, CuArray(x0), verbose=true)
+
+fun = x -> sum((x .^ 2 .- given_height).^2)# f_q(x, given_height)
+res_gpu = optimize(fun, CuArray(x0), LBFGS())

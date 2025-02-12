@@ -35,13 +35,13 @@ An example use can be seen `Example` slidebar or in the actual package in /scrip
 
 ## Dependencies
 
-`L-BFGS GPU` requires among others CUDA.jl for GPU acceleration. Ensure you have CUDA installed and properly configured for Julia:
+`L-BFGS GPU` The dependencies to run an example as described in the Example section are listed below
 
 ```julia
 using Pkg
-Pkg.add("CUDA")
-using CUDA
-CUDA.version()
+Pkg.add(["Optim", "CUDA", "Random"])
+Pkg.add(url="https://github.com/matouon/lbfgsgpu.jl")
+
 ```
 
 ## References

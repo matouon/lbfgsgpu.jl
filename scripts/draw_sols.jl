@@ -154,13 +154,21 @@ function compute_and_print(f::Function, x0::AbstractVector, verbose::Bool)
     return minimizer, minimum
 end
 
+function filtering(sol_vals::AbstractArray, tolerance::Number)
+    sol_vals_cpu_flat = vcat(sol_vals...)  # Flatten nested arrays
 
+    filtered_indices = findall(abs.(sol_vals_cpu_flat .- given_height) .< tolerance)
+    filtered_sols = sols[filtered_indices]
+    filtered_vals = sol_vals_cpu_flat[filtered_indices]
+
+    filtered_sols, filtered_vals
+end
 ########################################################################################################
-f_str = "q" #either g, gs, q -> gaussian, gaussian with sq. input, quadratic
+f_str = "g" #either g, gs, q -> gaussian, gaussian with sq. input, quadratic
 
 M = 500 #solution size 
 min_r, max_r = -10, 10 # min_range, max_range for the random initialization
-given_height = 40 #The height at which we want the value of selected function to be
+given_height = 1/4 #The height at which we want the value of selected function to be
 gaus_mu = 1
 gaus_std = 1
 
@@ -182,6 +190,7 @@ sols, min = compute_and_print(obj_fun, x0_cuda, verbose=true)
 
 num_of_x_vals = 200
 #Get solution values and y values of respective solutions
+x_vals = Array(range(min_r, max_r, length=num_of_x_vals))
 
 sol_vals, y_vals = eval_sols(x_vals, sols, gaus_mu, gaus_std, f_str)
 
@@ -189,14 +198,11 @@ p = plot(x_vals, y_vals, label="g(x)", linewidth=2, legend=:topright)
 
 
 #post processing of solution!!!! Very important step to check whether solutions converged correctly!!
-sol_vals_cpu_flat = vcat(sol_vals...)  # Flatten nested arrays
 tolerance = 0.01
 
-filtered_indices = findall(abs.(sol_vals_cpu_flat .- given_height) .< tolerance)
-filtered_sols = sols[filtered_indices]
-filtered_vals = sol_vals_cpu_flat[filtered_indices]
+filtered_sols, filtered_vals = filtering(sol_vals, tolerance)
 
-
+# filtered_sols, filtered_vals
 scatter!(Array(filtered_sols), Array(filtered_vals), label="Solutions", markersize=5, color=:red)
 
 savefig(p, "plot.png")
