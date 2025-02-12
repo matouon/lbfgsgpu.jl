@@ -8,7 +8,6 @@ makedocs(
     # modules = [lbfgsgpu],  # Specify your module name if applicable
     pages = [
         "Home" => "index.md",
-        "Abstract" => "abstract.md",
         "Problem" => "problem.md",
         "Solution" => "solution.md",
         "Example" => "example.md",
