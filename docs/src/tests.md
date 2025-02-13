@@ -1,6 +1,6 @@
 # Tests
 
-This package is tested via direct comparison between the outputs of original `L-BFGS` and the GPU accelerated `L-BFGS`.
+This package is tested via direct comparison between the outputs of original `L-BFGS` and the GPU version `L-BFGS`.
 
 # Test Cases
 

@@ -1,14 +1,17 @@
-# Benchmarking L-BFGS Optimization with and without CUDA Acceleration
+# Benchmarking L-BFGS Optimization with and without CUDA
 
-The package can be used to evaluate the performance of the L-BFGS optimization method for various functions, both with and without CUDA acceleration. The functions for which benchmarking can be tested out of the box are:
+The package can be used to evaluate the performance of the L-BFGS optimization method for various functions, both with and without CUDA implementation. The functions for which benchmarking can be tested out of the box are:
 
 - **Gaussian Function** 
 - **Gaussian with Squared Input**
 - **Quadratic Function** 
 
+
 A single benchmarking test is performed with increasing solution sizes, and the execution time (mean and minimum) for both CPU and GPU implementations is recorded.
 
 The performance is measured using BenchmarkTools, with benchmarking being run on both CPU and GPU (using CUDA). Results, including computation times can be stored in a DataFrame format for further analysis. The optimization function is selected based on a user string input (f_str), allowing for flexible function testing.
+
+### The benchmarking was performed on MSI GTX 980 GAMING 4G
 
 At first the CUDA version was very very fast. However the results were not really that good. This speed comparison is the first plot.
 # Old approach -> Nice time, bad results
