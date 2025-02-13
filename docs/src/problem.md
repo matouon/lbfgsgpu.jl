@@ -1,6 +1,6 @@
 # Problem
 
-My core motivation (can show some alternative GPU use) for kernelizing L-BFGS is a real life HEP analysis problem at CERN. As described below, there is a need for an efficient and fast equation solver. The problem is rather difficult and to my current best knowledge it is not formalized as an official assignment yet. However you will have to trust me on this, but it can be reformulated as finding a set of input variables 
+My core motivation (can show some alternative GPU use) for kernelizing L-BFGS is a real life HEP analysis problem at CERN. The problem is rather difficult to explain and to my current best knowledge it is not formalized as an official assignment in some CERN documentation yet. However you will have to trust me on this, but it can be reformulated as finding a set of input variables 
 
 ```math 
 x_1, x_2, ..., x_n 
