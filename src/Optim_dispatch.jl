@@ -22,16 +22,15 @@ function FiniteDiff.finite_difference_gradient!(
     #x = [-5.143633339334399, -3.719855687175146, 1.7641842547134914] so far so good
     if fdtype == Val(:forward)
         epsilons = FiniteDiff.compute_epsilon.(fdtype, x, relstep, absstep, dir)
-        x_old = x
         if typeof(fx) != Nothing
             c3 .= x .+ epsilons
             dfi = (f(c3) - fx) ./ epsilons
-            c3 .= x_old
+            c3 .= x
         else
             fx0 = f.(x)
             c3 .= x .+ epsilons
             dfi = (f(c3) - fx0) ./ epsilons
-            c3 .= x_old
+            c3 .= x
         end
         df .= real.(dfi)
 
@@ -43,7 +42,7 @@ function FiniteDiff.finite_difference_gradient!(
                 else
                     dfi = (f(c3) - fx0) ./ (im .* epsilons)
                 end
-                c3 .= x_old
+                c3 .= x
             else
                 c1 .= x .+ im .* epsilons
                 if typeof(fx) != Nothing
@@ -51,7 +50,7 @@ function FiniteDiff.finite_difference_gradient!(
                 else
                     dfi = (f(c1) - fx0) ./ (im .* epsilons)
                 end
-                c1 .= x_old
+                c1 .= x
             end
             df .-= im .* imag.(dfi)
             
@@ -61,52 +60,41 @@ function FiniteDiff.finite_difference_gradient!(
         epsilons = similar(x)
         epsilons .= FiniteDiff.compute_epsilon.(fdtype, x, relstep, absstep, dir)
     
-        x_old = x
-        c3i = similar(epsilons)
-        c3i .= x_old .- epsilons
+        c3i = x .- epsilons
 
         c_st = repeat(c3', size(c3i, 1), 1)
 
-        # Matrix of of ones
-        B = CuArray(ones(Float64, size(c_st)))
-
-        # Set diagonal to zero
-        B[diagind(B)] .= 0
-
-        dd = CuArray(zeros(Float64, size(c_st)))
+        B = CUDA.ones(Float64, size(c_st))
+        B[diagind(B)] .= 0.0
+        
+        dd = CUDA.zeros(Float64, size(c_st))
         dd[diagind(dd)] .= c3 .+ epsilons
-        c_st_i = similar(c_st)
-        c_st_i .= c_st.*B .+ dd
+        c_st_i = c_st.*B .+ dd
 
-        dfi = similar(c_st_i, size(c_st_i, 1), 1)
+        dfi = CUDA.zeros(Float64, size(c_st, 1), 1)
+        dfi .= map(f, eachrow(c_st_i)) |> CuArray
 
-        dfi .= CuArray(map(f, eachrow(c_st_i))) # Result is a column vector
-      
-        # Matrix of of ones
-        B = CuArray(ones(Float64, size(c_st)))
-
-        # Set diagonal to zero
-        B[diagind(B)] .= 0
-
-        dd = CuArray(zeros(Float64, size(c_st)))
+        dd .= 0.0
         dd[diagind(dd)] .= c3 .- epsilons
         c_st .= c_st.*B .+ dd
-        dfi .= dfi .- CuArray(map(f, eachrow(c_st))) #vec
+
+        dfi .= dfi .- (map(f, eachrow(c_st)) |> CuArray)
+
         df .= real.(dfi ./ ( 2 .*epsilons))#vec
 
         if eltype(df) <: Complex
             if eltype(x) <: Complex
                 c3 .+= im .* epsilons
                 dfi .= f.(c3)
-                c3 .= x_old .- im .* epsilons
+                c3 .= x .- im .* epsilons
                 dfi .-= f.(c3)
-                c3 .= x_old
+                c3 .= x
             else
                 c1 .+= im .* epsilons
                 dfi .= f.(c1)
-                c1 .= x_old .- im .* epsilons
+                c1 .= x .- im .* epsilons
                 dfi .-= f.(c1)
-                c1 .= x_old
+                c1 .= x
             end
             df .-= im .* imag.(dfi ./ (2 .* im .* epsilons))
         end

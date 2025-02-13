@@ -141,12 +141,15 @@ results = DataFrame(
 ns_to_s = 1e-9 #Conversio nmade because benchmark returns time in ns
 num_of_points = Int64[1e2, 2e2, 3e2, 4e2]# 3e3, 5e3, 7e3, 1e4]
 
+Random.seed!(69420)
+x0_cuda = CuArray(random_init(Int(1e2), min_r, max_r)) # Initial guess
+ProfileView.@profview  compute_and_print(fun, x0_cuda)
+
 for m in num_of_points
     print("Testing for: ", m, " variables --------> ")
     print(" Without CUDA -------> ")
     Random.seed!(69420)
     x0 = random_init(m, min_r, max_r) # Initial guess
-    #TODO replace with benchmarking to get min and mean time and not only one time!!!
     stats = @benchmark compute_and_print(fun, $x0) 
 
     min_time = minimum(stats.times)  # Minimum cycle time

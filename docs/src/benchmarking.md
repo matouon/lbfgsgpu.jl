@@ -10,4 +10,11 @@ A single benchmarking test is performed with increasing solution sizes, and the 
 
 The performance is measured using BenchmarkTools, with benchmarking being run on both CPU and GPU (using CUDA). Results, including computation times can be stored in a DataFrame format for further analysis. The optimization function is selected based on a user string input (f_str), allowing for flexible function testing.
 
-For some reason the CUDA version is very slow and obviously needs some modifications. I wont show the benchmarking results because of embarassment.
+At first the CUDA version was very very fast. However the results were not really that good. This speed comparison is the first plot.
+# Old approach -> Nice time, bad results
+![My Image](assets/cuda_vs_no_cuda_lineplot_old.png)
+
+In the end i managed to repair the mistake, but at what cost.
+Probably due to high memory allocations for huge matrices the CUDA version is now very slow and obviously needs some optimization. You can see this sad truth on a graph below this text.
+# New approach -> Nice results, bad time
+![My Image](assets/cuda_vs_no_cuda_lineplot.png)
