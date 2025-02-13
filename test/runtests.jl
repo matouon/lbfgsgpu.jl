@@ -59,7 +59,7 @@ function compute_test(f, x0::AbstractVector)
     Array(minimizer)
 end
 
-function filtering(sol_vals::AbstractArray, tolerance::Number, given_height::Number)
+function filtering(sol_vals::AbstractArray, given_height::Number, tolerance::Number)
     sol_vals_cpu_flat = vcat(sol_vals...)  # Flatten nested arrays
 
     filtered_indices = findall(abs.(sol_vals_cpu_flat .- given_height) .< tolerance)
@@ -70,23 +70,23 @@ end
 
 
 #Simple constructor for diff input number for gaussian/quadratic
-function eval_sols(sols::F, gaus_mu::G, gaus_std::H, f_str::String, orig_fun) where {F <: AbstractArray, G <: Number, H <: Number}
+function eval_sols_test(sols::F, gaus_mu::G, gaus_std::H, f_str::String, orig_fun) where {F <: AbstractArray, G <: Number, H <: Number}
     if f_str == "g" || f_str == "gs"
-        sol_vals = eval_sols_( sols, gaus_mu, gaus_std, orig_fun)
+        sol_vals = eval_sols_test_( sols, gaus_mu, gaus_std, orig_fun)
     else
-        sol_vals = eval_sols_(sols, orig_fun)
+        sol_vals = eval_sols_test_(sols, orig_fun)
     end
     sol_vals
 end
 
 #Multiple dispatch for gaussian
-function eval_sols_(sols::F, gaus_mu::G, gaus_std::H, orig_fun) where {F <: AbstractArray, G <: Number, H <: Number}
+function eval_sols_test_(sols::F, gaus_mu::G, gaus_std::H, orig_fun) where {F <: AbstractArray, G <: Number, H <: Number}
     sol_vals = orig_fun.([sols], gaus_mu, gaus_std)
     sol_vals
 end
 
 #Multiple dispatch for quadratic
-function eval_sols_(sols::F, orig_fun) where {F <: AbstractArray}
+function eval_sols_test_(sols::F, orig_fun) where {F <: AbstractArray}
     sol_vals = orig_fun.([sols])
     sol_vals
 end
@@ -156,11 +156,11 @@ function init_test(var_n, giv_h, gaus_mu, gaus_std, f, f_str, tolerance)
 
         minimizer = compute_test(f, x0)
         minimizer_cuda = compute_test(f, x0_cuda)
-        sol_vals = eval_sols(minimizer, gaus_mu, gaus_std, f_str, orig_fun)
-        sol_vals_cuda = eval_sols(minimizer_cuda, gaus_mu, gaus_std, f_str, orig_fun)
+        sol_vals = eval_sols_test(minimizer, gaus_mu, gaus_std, f_str, orig_fun)
+        sol_vals_cuda = eval_sols_test(minimizer_cuda, gaus_mu, gaus_std, f_str, orig_fun)
 
-        filtered_vals = filtering(sol_vals, tolerance, giv_h)
-        filtered_vals_cuda = filtering(sol_vals_cuda, tolerance, giv_h)
+        filtered_vals = filtering(sol_vals, giv_h, tolerance)
+        filtered_vals_cuda = filtering(sol_vals_cuda, giv_h, tolerance)
         m_val = mean(filtered_vals)
         m_val_c = mean(filtered_vals_cuda)
         m_val, m_val_c

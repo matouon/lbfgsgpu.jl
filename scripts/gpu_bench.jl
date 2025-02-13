@@ -6,6 +6,7 @@ using DataFrames
 using CSV
 using lbfgsgpu
 using ProfileView
+
 #Randomly initializes a init solution, where M is solution size, min_r, max_r are minimal and maximal range of random numbers
 function random_init(M::Int, min_r::T, max_r::F) where {T<:Number,F<:Number}
     return rand(M).*(max_r.-min_r) .+ min_r
