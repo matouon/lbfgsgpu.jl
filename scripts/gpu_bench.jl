@@ -141,9 +141,10 @@ results = DataFrame(
 ns_to_s = 1e-9 #Conversio nmade because benchmark returns time in ns
 num_of_points = Int64[1e2, 2e2, 3e2, 4e2]# 3e3, 5e3, 7e3, 1e4]
 
-Random.seed!(69420)
-x0_cuda = CuArray(random_init(Int(1e2), min_r, max_r)) # Initial guess
-ProfileView.@profview  compute_and_print(fun, x0_cuda)
+#Uncomment for profiling
+# Random.seed!(69420)
+# x0_cuda = CuArray(random_init(Int(1e2), min_r, max_r)) # Initial guess
+# ProfileView.@profview  compute_and_print(fun, x0_cuda)
 
 for m in num_of_points
     print("Testing for: ", m, " variables --------> ")
@@ -160,7 +161,7 @@ for m in num_of_points
     print(" With CUDA\n")
     Random.seed!(69420)
     x0_cuda = CuArray(random_init(m, min_r, max_r)) # Initial guess
-    stats_cuda = @benchmark compute_and_print(fun, $x0_cuda)
+    stats_cuda = @benchmark CUDA.@sync compute_and_print(fun, $x0_cuda)
     min_time_cuda = minimum(stats_cuda.times) # Minimum cycle time
     mean_time_cuda = mean(stats_cuda.times) # Mean cycle time
     min_sol_cuda, min_value_cuda = compute_and_print(fun, x0_cuda)
