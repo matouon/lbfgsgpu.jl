@@ -1,4 +1,4 @@
-# Here is a very brief description of all usable functions in package
+# Here is a very brief description of functions defined in package and helper/testing scripts
 
 
 #### functions : Standard definition for functions
