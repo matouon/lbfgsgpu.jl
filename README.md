@@ -1,5 +1,15 @@
-![alt text](/lbfgsgpu.jl/docs/build/assets
-/logo.png "ig @ludekthecat")
+<div align="center">
+    <h1><strong>L-BFGS</strong></h1>
+</div>
+
+<p align="center">
+    <img src="/docs/build/assets/logo.png" alt="ig @ludekthecat" width="200">
+</p>
+
+# **DOCUMENTATION** 
+You can view the package documentation in [Documentation link]( https://github.com/matouon/lbfgsgpu.jl/blob/master/docs/src/index.md)
+
+# Abstract
 The goal of this package is to provide a GPU solver  implementation of `L-BFGS` solver from Optim.jl. The motivation for this is to solve a physics inspired problem described in documentation.
 
 The base `L-BFGS` is directly used from https://github.com/JuliaNLSolvers/Optim.jl/blob/master/src/multivariate/solvers/first_order/l_bfgs.jl
